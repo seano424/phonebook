@@ -5,6 +5,7 @@ var morgan = require("morgan");
 app.use(cors());
 app.use(express.json());
 app.use(morgan("postFormat"));
+app.use(express.static("build"));
 
 morgan.token("post", (request) => {
   if (request.method === "POST") return JSON.stringify(request.body);
