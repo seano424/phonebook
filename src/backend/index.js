@@ -1,11 +1,27 @@
 const express = require("express");
 const app = express();
 const cors = require("cors");
-var morgan = require("morgan");
+const morgan = require("morgan");
 app.use(cors());
 app.use(express.json());
 app.use(morgan("postFormat"));
 app.use(express.static("build"));
+
+require("dotenv").config();
+
+const mongoose = require("mongoose");
+console.log(process.env);
+const password = process.env.REACT_APP_MONGODB_PASSWORD;
+const url = `mongodb+srv://sean:${password}@cluster0.bkrtk.mongodb.net/phonebook-app?retryWrites=true&w=majority`;
+
+mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
+
+const personSchema = new mongoose.Schema({
+  name: String,
+  number: String,
+});
+
+const Person = mongoose.model("Person", personSchema);
 
 morgan.token("post", (request) => {
   if (request.method === "POST") return JSON.stringify(request.body);
