@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseurl = "/api/persons";
+const baseurl = "http://localhost:3001/api/persons";
 
 const getAll = () => {
   const request = axios.get(baseurl);
@@ -18,7 +18,6 @@ const destroy = (id) => {
 };
 
 const update = (id, updatedPerson) => {
-  console.log(id);
   const request = axios.put(`${baseurl}/${id}`, updatedPerson);
   return request.then((res) => res.data);
 };
