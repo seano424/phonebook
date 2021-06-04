@@ -1,31 +1,34 @@
-import axios from "axios";
+import axios from 'axios'
 
-const baseurl = "http://localhost:3001/api/persons";
+const baseurl = 'http://localhost:3001/api/persons'
 
-const getAll = () => {
-  const request = axios.get(baseurl);
-  return request.then((res) => res.data);
-};
+const getAll = async () => {
+    const request = axios.get(baseurl)
+    const res = await request
+    return res.data
+}
 
-const create = (newObj) => {
-  const request = axios.post(baseurl, newObj);
-  return request
-    .then((response) => response.data)
-    .catch((error) => {
-      console.log(error.response.data);
-    });
-};
+const create = async (newObj) => {
+    const request = axios.post(baseurl, newObj)
+    try {
+        const response = await request
+        return response.data
+    } catch (error) {
+        console.log(error.response.data)
+    }
+}
 
 const destroy = (id) => {
-  const request = axios.delete(`${baseurl}/${id}`);
-  return request;
-};
+    const request = axios.delete(`${baseurl}/${id}`)
+    return request
+}
 
-const update = (id, updatedPerson) => {
-  const request = axios.put(`${baseurl}/${id}`, updatedPerson);
-  return request.then((res) => res.data);
-};
+const update = async (id, updatedPerson) => {
+    const request = axios.put(`${baseurl}/${id}`, updatedPerson)
+    const res = await request
+    return res.data
+}
 
-const exportedObj = { getAll, create, destroy, update };
+const exportedObj = { getAll, create, destroy, update }
 
-export default exportedObj;
+export default exportedObj
