@@ -28,13 +28,22 @@ const App = () => {
         date: new Date().toISOString(),
       };
       personService.create(personObject).then((returnedPerson) => {
-        setPersons([...persons, personObject]);
-        setNotification(true);
-        setNotificationMsg(`${personObject.name} has been added`);
-        setTimeout(() => {
-          setNotification(false);
-        }, 2000);
+        if (typeof returnedPerson !== "undefined") {
+          setPersons([...persons, personObject]);
+          setNotification(true);
+          setNotificationMsg(`${personObject.name} has been added`);
+          setTimeout(() => {
+            setNotification(false);
+          }, 2000);
+        } else {
+          setNotification(true);
+          setNotificationMsg(`Person validation error`);
+          setTimeout(() => {
+            setNotification(false);
+          }, 2000);
+        }
       });
+
       setNewNumber("");
       setNewName("");
       setFilteredContent("");

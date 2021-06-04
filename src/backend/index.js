@@ -2,11 +2,13 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const morgan = require("morgan");
+const Person = require("../models/person");
+const { response } = require("express");
+
 app.use(cors());
 app.use(express.json());
 app.use(morgan("postFormat"));
 app.use(express.static("build"));
-const Person = require("../models/person");
 
 morgan.token("post", (request) => {
   if (request.method === "POST") return JSON.stringify(request.body);
@@ -110,27 +112,44 @@ const generateId = () => {
   return Math.floor(Math.random() * 10 ** 3);
 };
 
-app.post("/api/persons", (request, response) => {
-  const body = request.body;
-  const names = persons.map((person) => person.name);
-  if (!body.name || !body.number) {
-    return response.status(400).json({
-      error: "name or number missing",
-    });
-  } else if (names.includes(body.name)) {
-    return response.status(400).json({
-      error: "name already exists in phonebook",
-    });
-  }
+// app.post("/api/persons", (request, response) => {
+//   const body = request.body;
+//   const names = persons.map((person) => person.name);
+//   if (!body.name || !body.number) {
+//     return response.status(400).json({
+//       error: "name or number missing",
+//     });
+//   } else if (names.includes(body.name)) {
+//     return response.status(400).json({
+//       error: "name already exists in phonebook",
+//     });
+//   }
 
-  const person = {
+//   const person = {
+//     name: body.name,
+//     number: body.number,
+//     id: generateId(),
+//     date: new Date(),
+//   };
+//   persons = persons.concat(person);
+//   response.json(person);
+// });
+
+app.post("/api/persons", (req, res, next) => {
+  const body = req.body;
+
+  const person = new Person({
     name: body.name,
     number: body.number,
     id: generateId(),
-    date: new Date(),
-  };
-  persons = persons.concat(person);
-  response.json(person);
+  });
+
+  person
+    .save()
+    .then((savedPerson) => {
+      res.json(savedPerson.toJSON());
+    })
+    .catch((error) => next(error));
 });
 
 app.put("/api/persons/:id", (request, response, next) => {
@@ -152,6 +171,8 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === "CastError") {
     return response.status(400).send({ error: "malformatted id" });
+  } else if (error.name === "ValidationError") {
+    return response.status(400).json({ error: error.message });
   }
 
   next(error);
