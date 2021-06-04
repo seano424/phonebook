@@ -6,22 +6,7 @@ app.use(cors());
 app.use(express.json());
 app.use(morgan("postFormat"));
 app.use(express.static("build"));
-
-require("dotenv").config();
-
-const mongoose = require("mongoose");
-console.log(process.env);
-const password = process.env.REACT_APP_MONGODB_PASSWORD;
-const url = `mongodb+srv://sean:${password}@cluster0.bkrtk.mongodb.net/phonebook-app?retryWrites=true&w=majority`;
-
-mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true });
-
-const personSchema = new mongoose.Schema({
-  name: String,
-  number: String,
-});
-
-const Person = mongoose.model("Person", personSchema);
+const Person = require("../models/person");
 
 morgan.token("post", (request) => {
   if (request.method === "POST") return JSON.stringify(request.body);
@@ -73,25 +58,52 @@ app.get("/info", (request, response) => {
   );
 });
 
+// app.get("/api/persons", (request, response) => {
+//   response.json(persons);
+// });
+
 app.get("/api/persons", (request, response) => {
-  response.json(persons);
-});
-app.get("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  const person = persons.find((person) => person.id === id);
-
-  if (person) {
+  Person.find({}).then((person) => {
     response.json(person);
-  } else {
-    response.status(404).end();
-  }
+  });
 });
 
-app.delete("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  persons = persons.filter((person) => person.id !== id);
+// app.get("/api/persons/:id", (request, response) => {
+//   const id = Number(request.params.id);
+//   const person = persons.find((person) => person.id === id);
 
-  response.status(204).end();
+//   if (person) {
+//     response.json(person);
+//   } else {
+//     response.status(404).end();
+//   }
+// });
+
+app.get("/api/persons/:id", (req, res, next) => {
+  Person.findById(req.params.id)
+    .then((person) => {
+      if (person) {
+        res.json(person);
+      } else {
+        res.status(404).end();
+      }
+    })
+    .catch((error) => next(error));
+});
+
+// app.delete("/api/persons/:id", (request, response) => {
+//   const id = Number(request.params.id);
+//   persons = persons.filter((person) => person.id !== id);
+
+//   response.status(204).end();
+// });
+
+app.delete("/api/persons/:id", (request, response, next) => {
+  Person.findByIdAndRemove(request.params.id)
+    .then((result) => {
+      response.status(204).end();
+    })
+    .catch((error) => next(error));
 });
 
 const generateId = () => {
@@ -107,7 +119,7 @@ app.post("/api/persons", (request, response) => {
     });
   } else if (names.includes(body.name)) {
     return response.status(400).json({
-      error: "name alread exists in phonebook",
+      error: "name already exists in phonebook",
     });
   }
 
@@ -120,6 +132,33 @@ app.post("/api/persons", (request, response) => {
   persons = persons.concat(person);
   response.json(person);
 });
+
+app.put("/api/persons/:id", (request, response, next) => {
+  const body = request.body;
+  const note = {
+    name: body.name,
+    number: body.number,
+  };
+
+  Person.findByIdAndUpdate(request.params.id, note, { new: true })
+    .then((updatedPerson) => {
+      response.json(updatedPerson);
+    })
+    .catch((error) => next(error));
+});
+
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message);
+
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformatted id" });
+  }
+
+  next(error);
+};
+
+// this has to be the last loaded middleware.
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
