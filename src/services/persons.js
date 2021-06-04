@@ -18,6 +18,7 @@ const destroy = (id) => {
 };
 
 const update = (id, updatedPerson) => {
+  console.log(id);
   const request = axios.put(`${baseurl}/${id}`, updatedPerson);
   return request.then((res) => res.data);
 };
