@@ -1,19 +1,31 @@
-import React, * as react from 'react'
+import React, { useState, useEffect } from 'react'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
-import personService from './services/persons'
+import personService from './controllers/persons'
+import { mostLikes } from './utils/list_helper'
+
+const blogs = [
+    { title: 'blog 1', totalLikes: 2, author: 'Sean' },
+    { title: 'blog 2', totalLikes: 6, author: 'John' },
+    { title: 'blog 3', totalLikes: 12, author: 'Sean' },
+    { title: 'blog 4', totalLikes: 23, author: 'John' },
+    { title: 'blog 5', totalLikes: 27, author: 'Sean' },
+]
 
 const App = () => {
-    const [persons, setPersons] = react.useState([])
-    const [newName, setNewName] = react.useState('')
-    const [newNumber, setNewNumber] = react.useState('')
-    const [filteredContent, setFilteredContent] = react.useState('')
-    const [notification, setNotification] = react.useState(false)
-    const [notificationMsg, setNotificationMsg] = react.useState('hello')
+    const [persons, setPersons] = useState([])
+    const [newName, setNewName] = useState('')
+    const [newNumber, setNewNumber] = useState('')
+    const [filteredContent, setFilteredContent] = useState('')
+    const [notification, setNotification] = useState(false)
+    const [notificationMsg, setNotificationMsg] = useState('hello')
 
-    react.useEffect(() => {
-        personService.getAll().then((initialPersons) => setPersons(initialPersons))
+    useEffect(() => {
+        console.log(mostLikes(blogs))
+        personService
+            .getAll()
+            .then((initialPersons) => setPersons(initialPersons))
     }, [])
 
     const addPerson = (evt) => {
@@ -54,14 +66,17 @@ const App = () => {
                 )
             ) {
                 const foundPerson = persons.find(
-                    (person) => person.name.toLowerCase() === newName.toLowerCase()
+                    (person) =>
+                        person.name.toLowerCase() === newName.toLowerCase()
                 )
                 const updatedPerson = { ...foundPerson, number: newNumber }
                 personService
                     .update(foundPerson.id, updatedPerson)
                     .then((res) => {
                         setPersons(
-                            persons.map((person) => (person.id === res.id ? res : person))
+                            persons.map((person) =>
+                                person.id === res.id ? res : person
+                            )
                         )
                         setNotification(true)
                         setNotificationMsg(
@@ -123,7 +138,9 @@ const App = () => {
 
     return (
         <div>
-            {notification && <h1 style={notificationStyles}>{notificationMsg}</h1>}
+            {notification && (
+                <h1 style={notificationStyles}>{notificationMsg}</h1>
+            )}
             <h2>Phonebook</h2>
             <Filter handleFilteredContent={handleFilteredContent} />
             <PersonForm

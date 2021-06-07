@@ -109,7 +109,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
 
 const generateId = () => {
     return Math.floor(Math.random() * 10 ** 3)
-};
+}
 
 // app.post('/api/persons', (request, response) => {
 //   const body = request.body;

@@ -1,5 +1,4 @@
-import axios from 'axios'
-
+const axios = require('axios')
 const baseurl = 'http://localhost:3001/api/persons'
 
 const getAll = async () => {
